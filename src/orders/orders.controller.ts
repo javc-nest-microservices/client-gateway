@@ -6,13 +6,13 @@ import {
   Patch,
   Param,
   Inject,
-  ParseIntPipe
+  ParseUUIDPipe,
+  Query
 } from '@nestjs/common'
-import { CreateOrderDto } from './dto/create-order.dto'
-import { UpdateOrderDto } from './dto/update-order.dto'
 import { ClientProxy, RpcException } from '@nestjs/microservices'
 import { ORDER_SERVICE } from 'src/config'
 import { catchError } from 'rxjs'
+import { CreateOrderDto, OrderPaginationDTO, StatusDto } from './dto'
 
 @Controller('orders')
 export class OrdersController {
@@ -30,16 +30,18 @@ export class OrdersController {
   }
 
   @Get()
-  findAllOrders() {
-    return this.ordersClient.send({ cmd: 'findAllOrders' }, {}).pipe(
-      catchError((error) => {
-        throw new RpcException(error)
-      })
-    )
+  findAllOrders(@Query() orderPaginationDto: OrderPaginationDTO) {
+    return this.ordersClient
+      .send({ cmd: 'findAllOrders' }, orderPaginationDto)
+      .pipe(
+        catchError((error) => {
+          throw new RpcException(error)
+        })
+      )
   }
 
   @Get(':id')
-  findOneOrder(@Param('id', ParseIntPipe) id: number) {
+  findOneOrder(@Param('id', ParseUUIDPipe) id: string) {
     return this.ordersClient.send({ cmd: 'findOneOrder' }, { id }).pipe(
       catchError((error) => {
         throw new RpcException(error)
@@ -49,11 +51,11 @@ export class OrdersController {
 
   @Patch(':id')
   changeOrderStatus(
-    @Param('id') id: string,
-    @Body() updateOrderDto: UpdateOrderDto
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() statusDto: StatusDto
   ) {
     return this.ordersClient
-      .send({ cmd: 'changeOrderStatus' }, { id, ...updateOrderDto })
+      .send({ cmd: 'changeOrderStatus' }, { id, ...statusDto })
       .pipe(
         catchError((error) => {
           throw new RpcException(error)
