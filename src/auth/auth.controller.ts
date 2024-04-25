@@ -8,7 +8,7 @@ export class AuthController {
   constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {}
 
   @Post('register')
-  register() {
+  registerUser() {
     return this.client.send('auth.register.user', {}).pipe(
       catchError((error) => {
         throw new RpcException(error)
@@ -17,7 +17,7 @@ export class AuthController {
   }
 
   @Post('login')
-  login() {
+  loginUser() {
     return this.client.send('auth.login.user', {}).pipe(
       catchError((error) => {
         throw new RpcException(error)
@@ -26,7 +26,7 @@ export class AuthController {
   }
 
   @Get('verify')
-  verify() {
+  verifyUser() {
     return this.client.send('auth.verify.user', {}).pipe(
       catchError((error) => {
         throw new RpcException(error)
